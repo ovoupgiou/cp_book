@@ -35,6 +35,11 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-of
 .legend{display:flex;gap:16px;font-size:.85rem;color:var(--mute);margin-top:10px;flex-wrap:wrap}
 .scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:640px;font-size:.92rem}
 th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+.stand{color:var(--ink)!important}.stand a{color:var(--acc)}
+.phone{display:grid;grid-template-columns:minmax(120px,38%) 1fr;gap:8px}
+select{width:100%;font:inherit;padding:10px 12px;margin-top:4px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+details{margin-top:14px}summary{cursor:pointer;color:var(--mute);font-size:.9rem}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;letter-spacing:.08em;font-size:1.05rem}
 .foot{margin-top:28px;text-align:center;font-size:.85rem}
 .foot a{color:var(--mute);cursor:pointer;text-decoration:underline}
 .row{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
@@ -47,6 +52,7 @@ th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertic
   <span class="tag">Formnext 2026 · Frankfurt · 17–20 November</span>
   <h1>Co Print Quadro – Dealer Meetings</h1>
   <p>Interested in becoming a Co Print Quadro dealer? Reserve a 30-minute meeting with the Co Print team at our stand.</p>
+  <p class="stand">📍 <strong>Hall 12.1 · Stand G89</strong> — Messe Frankfurt · <a href="https://formnext.mesago.com/frankfurt/en/exhibitor-search/igp.html?url=/FORMNEXT/boothDetail/exhibitor/co-print-muehendislik-makina-yazilim-sanayi-ve-ticaret-anonim-sirketi?hallId=H012&amp;layerId=L001&amp;boothNumber=G89&amp;boothId=co-print-muehendislik-makina-yazilim-sanayi-ve-ticaret-anonim-sirketi&amp;fromExhibitionSearch=true&amp;lang=en-GB" target="_blank" rel="noopener">View our stand on the Formnext exhibitor page</a></p>
 </header>
 
 <section id="view-book">
@@ -64,11 +70,32 @@ th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertic
     <input id="company" autocomplete="organization" maxlength="160">
     <label for="email">Email</label>
     <input id="email" type="email" autocomplete="email" maxlength="160">
-    <label for="phone">Phone number</label>
-    <input id="phone" type="tel" autocomplete="tel" placeholder="+90 …" maxlength="40">
+    <label for="cc">Phone number</label>
+    <div class="phone">
+      <select id="cc" aria-label="Country code"></select>
+      <input id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="Phone number" maxlength="20" aria-label="Phone number">
+    </div>
     <button class="primary" id="submit" disabled>Confirm meeting</button>
     <div class="msg" id="msg" role="status" aria-live="polite"></div>
   </div>
+  <div class="card" id="mineCard" hidden>
+    <h2>Your booking</h2>
+    <p id="mineText" style="margin:0"></p>
+    <p style="margin:8px 0 0">Cancellation code: <span class="code" id="mineCode"></span></p>
+    <p class="mute" style="font-size:.85rem;margin:4px 0 0">Please keep this code. You need it to cancel from another device.</p>
+    <button class="ghost" id="cancelMine" style="margin-top:12px">Cancel my booking</button>
+    <div class="msg" id="mmsg" role="status"></div>
+  </div>
+
+  <details id="manage">
+    <summary>Already booked on another device? Cancel with your code</summary>
+    <div class="card" style="margin-top:10px">
+      <label for="mgEmail" style="margin-top:0">Email used for the booking</label><input id="mgEmail" type="email">
+      <label for="mgCode">Cancellation code</label><input id="mgCode" autocomplete="off" maxlength="20">
+      <button class="ghost" id="mgCancel" style="margin-top:12px">Cancel booking</button>
+      <div class="msg" id="gmsg" role="status"></div>
+    </div>
+  </details>
 </section>
 
 <section id="view-login" hidden>
@@ -105,7 +132,14 @@ var SUPABASE_ANON_KEY = "sb_publishable_TQQoJxGiEJDAZ7gx9iO2Yw_aMdEuS2G";
 /* ======================================================================= */
 
 var DAYS=[["2026-11-17","Tue","17 Nov",9,18],["2026-11-18","Wed","18 Nov",9,18],["2026-11-19","Thu","19 Nov",9,18],["2026-11-20","Fri","20 Nov",9,16]];
-var state={day:DAYS[0][0],slot:null,taken:{},token:null,all:[]};
+var STAND="Hall 12.1, Stand G89";
+var COUNTRIES="Afghanistan|93,Albania|355,Algeria|213,Argentina|54,Armenia|374,Australia|61,Austria|43,Azerbaijan|994,Bahrain|973,Bangladesh|880,Belarus|375,Belgium|32,Bosnia and Herzegovina|387,Brazil|55,Bulgaria|359,Canada|1,Chile|56,China|86,Colombia|57,Croatia|385,Cyprus|357,Czech Republic|420,Denmark|45,Egypt|20,Estonia|372,Finland|358,France|33,Georgia|995,Germany|49,Greece|30,Hong Kong|852,Hungary|36,Iceland|354,India|91,Indonesia|62,Iran|98,Iraq|964,Ireland|353,Israel|972,Italy|39,Japan|81,Jordan|962,Kazakhstan|7,Kenya|254,Kuwait|965,Latvia|371,Lebanon|961,Lithuania|370,Luxembourg|352,Malaysia|60,Mexico|52,Moldova|373,Morocco|212,Netherlands|31,New Zealand|64,Nigeria|234,North Macedonia|389,Norway|47,Oman|968,Pakistan|92,Peru|51,Philippines|63,Poland|48,Portugal|351,Qatar|974,Romania|40,Russia|7,Saudi Arabia|966,Serbia|381,Singapore|65,Slovakia|421,Slovenia|386,South Africa|27,South Korea|82,Spain|34,Sweden|46,Switzerland|41,Taiwan|886,Thailand|66,Tunisia|216,Turkey|90,Ukraine|380,United Arab Emirates|971,United Kingdom|44,United States|1,Uzbekistan|998,Vietnam|84".split(",");
+var state={day:DAYS[0][0],slot:null,taken:{},token:null,all:[],mine:null};
+try{state.mine=JSON.parse(localStorage.getItem("cp_mine")||"null")}catch(e){}
+function saveMine(){try{if(state.mine)localStorage.setItem("cp_mine",JSON.stringify(state.mine));else localStorage.removeItem("cp_mine")}catch(e){}}
+function makeCode(){var a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=new Uint8Array(10);crypto.getRandomValues(r);return Array.prototype.map.call(r,function(x){return a[x%a.length]}).join("")}
+function fillCountries(){var c=$("cc"),o=document.createElement("option");o.value="";o.textContent="Country code";c.appendChild(o);
+  COUNTRIES.forEach(function(x){var p=x.split("|"),op=document.createElement("option");op.value=p[1];op.textContent=p[0]+" (+"+p[1]+")";c.appendChild(op)})}
 var $=function(i){return document.getElementById(i)};
 var configured=SUPABASE_URL.indexOf("YOUR-PROJECT")<0;
 function pad(n){return n<10?"0"+n:""+n}
@@ -132,14 +166,18 @@ function renderSlots(){
   var d=DAYS.filter(function(x){return x[0]===state.day})[0];
   for(var h=d[3];h<d[4];h++)["00","30"].forEach(function(m){
     var t=pad(h)+":"+m,id=sid(state.day,t),b=document.createElement("button");b.className="slot";b.textContent=t;
-    if(state.taken[id]){b.classList.add("full");b.disabled=true;var s=document.createElement("span");s.textContent="BOOKED";b.appendChild(s)}
+    if(state.mine&&state.mine.slot===id){b.classList.add("full");b.style.color="var(--ok)";b.style.borderColor="var(--ok)";b.style.textDecoration="none";b.disabled=true;var sm=document.createElement("span");sm.textContent="YOURS";b.appendChild(sm)}
+    else if(state.taken[id]){b.classList.add("full");b.disabled=true;var s=document.createElement("span");s.textContent="BOOKED";b.appendChild(s)}
     else{b.setAttribute("aria-pressed",String(state.slot===id));b.onclick=function(){state.slot=id;renderAll()}}
     box.appendChild(b)});
 }
 function renderForm(){
   if(state.slot){var p=parse(state.slot);$("chosen").textContent="Selected: "+dayLabel(p.day)+", "+p.time}
   else $("chosen").textContent="No time selected yet.";
-  $("submit").disabled=!state.slot||!configured;
+  $("submit").disabled=!state.slot||!configured||!!state.mine;
+  var mc=$("mineCard");mc.hidden=!state.mine;
+  if(state.mine){var q=parse(state.mine.slot);$("mineText").textContent=dayLabel(q.day)+", "+q.time+" · "+STAND;$("mineCode").textContent=state.mine.code}
+  if(state.mine&&!$("msg").textContent)say("msg","You already have a booking. Cancel it first if you want to choose another time.","mute");
 }
 function renderAll(){renderDays();renderSlots();renderForm()}
 
@@ -147,25 +185,50 @@ async function loadTaken(){
   if(!configured)return;
   try{
     var r=await api("/rest/v1/rpc/taken_slots",{method:"POST",body:{}});
-    if(!r.ok)throw 0;var arr=await r.json(),t={};arr.forEach(function(s){t[s]=true});state.taken=t;renderAll();
+    if(!r.ok)throw 0;var arr=await r.json(),t={};arr.forEach(function(s){t[s]=true});state.taken=t;if(state.mine&&!t[state.mine.slot]){state.mine=null;saveMine()}renderAll();
   }catch(e){say("msg","Could not load availability. Please refresh the page.","err")}
 }
 
 $("submit").onclick=async function(){
-  var company=$("company").value.trim(),email=$("email").value.trim(),phone=$("phone").value.trim();
+  var company=$("company").value.trim(),email=$("email").value.trim(),cc=$("cc").value,num=$("phone").value.replace(/[\s()\-.]/g,"");
+  if(state.mine)return say("msg","You already have a booking. Cancel it first to choose another time.","err");
   if(!state.slot)return say("msg","Please select a time slot.","err");
   if(company.length<2)return say("msg","Please enter your company name.","err");
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return say("msg","Please enter a valid email address.","err");
-  if(!/^\+?[0-9 ()\-.]{7,}$/.test(phone))return say("msg","Please enter a valid phone number.","err");
+  if(!cc)return say("msg","Please select your country code.","err");
+  if(!/^[0-9]{6,14}$/.test(num))return say("msg","Please enter your phone number using digits only (without the country code).","err");
+  var phone="+"+cc+" "+num,code=makeCode(),slot=state.slot;
   $("submit").disabled=true;say("msg","Booking…");
   try{
-    var r=await api("/rest/v1/bookings",{method:"POST",prefer:"return=minimal",body:{slot:state.slot,company:company,email:email,phone:phone}});
-    if(r.status===409){say("msg","Sorry, this time was just booked by someone else. Please pick another.","err");state.slot=null}
+    var r=await api("/rest/v1/bookings",{method:"POST",prefer:"return=minimal",body:{slot:slot,company:company,email:email,phone:phone,cancel_code:code}});
+    if(r.status===409){
+      var txt="";try{txt=JSON.stringify(await r.json())}catch(e){}
+      if(txt.indexOf("email_unique")>=0)say("msg","This email address already has a booking. Each company can book one meeting. Use the cancellation code to cancel it first.","err");
+      else{say("msg","Sorry, this time was just booked by someone else. Please pick another.","err");state.slot=null}
+    }
     else if(!r.ok)throw 0;
-    else{var p=parse(state.slot);say("msg","Your meeting is confirmed for "+dayLabel(p.day)+", "+p.time+". We look forward to meeting you at the Co Print stand!","ok");state.slot=null;$("company").value=$("email").value=$("phone").value=""}
+    else{
+      state.mine={slot:slot,code:code,email:email,company:company};saveMine();state.slot=null;
+      var p=parse(slot);say("msg","Your meeting is confirmed for "+dayLabel(p.day)+", "+p.time+" at "+STAND+". We look forward to meeting you!","ok");
+      $("company").value=$("email").value=$("phone").value="";$("cc").value="";
+    }
   }catch(e){say("msg","Booking failed. Please try again.","err")}
   await loadTaken();renderAll();
 };
+
+async function cancelBooking(email,code,msgId){
+  say(msgId,"Cancelling…");
+  try{
+    var r=await api("/rest/v1/rpc/cancel_booking",{method:"POST",body:{p_email:email,p_code:code}});
+    if(!r.ok)throw 0;
+    if(await r.json()){
+      if(state.mine&&state.mine.email.toLowerCase()===email.trim().toLowerCase()){state.mine=null;saveMine()}
+      say(msgId,"Your booking has been cancelled.","ok");await loadTaken();renderAll();
+    }else say(msgId,"No booking found with this email and code.","err");
+  }catch(e){say(msgId,"Could not cancel. Please try again.","err")}
+}
+$("cancelMine").onclick=function(){if(state.mine&&confirm("Cancel your meeting?"))cancelBooking(state.mine.email,state.mine.code,"mmsg")};
+$("mgCancel").onclick=function(){var e=$("mgEmail").value.trim(),c=$("mgCode").value.trim();if(!e||!c)return say("gmsg","Please enter your email and code.","err");cancelBooking(e,c,"gmsg")};
 
 /* ---- team area ---- */
 function show(v){["book","login","admin"].forEach(function(n){$("view-"+n).hidden=n!==v});$("teamLink").parentNode.hidden=v!=="book"}
@@ -213,7 +276,7 @@ $("csv").onclick=function(){
   a.download="coprint-formnext-2026-meetings.csv";a.click();
 };
 
-renderAll();
+fillCountries();renderAll();
 if(!configured)say("msg","Setup needed: add your Supabase URL and key at the top of the script.","err");
 else{loadTaken();setInterval(loadTaken,30000);
   try{var tk=sessionStorage.getItem("cp_tok");if(tk)state.token=tk}catch(e){}}

@@ -100,8 +100,8 @@ th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertic
 <script>
 "use strict";
 /* ===== CONFIG: paste your Supabase values (Project Settings > API) ===== */
-var SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
-var SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+var SUPABASE_URL = "https://elmgycaefdhwceizwuuf.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_TQQoJxGiEJDAZ7gx9iO2Yw_aMdEuS2G";
 /* ======================================================================= */
 
 var DAYS=[["2026-11-17","Tue","17 Nov",9,18],["2026-11-18","Wed","18 Nov",9,18],["2026-11-19","Thu","19 Nov",9,18],["2026-11-20","Fri","20 Nov",9,16]];
@@ -114,7 +114,8 @@ function parse(id){var p=id.split("T");return {day:p[0],time:p[1].slice(0,2)+":"
 function dayLabel(day){var d=DAYS.filter(function(x){return x[0]===day})[0];return d?d[1]+" "+d[2]+" 2026":day}
 function say(id,t,cls){var m=$(id);m.textContent=t||"";m.className="msg "+(cls||"")}
 function api(path,opt){
-  opt=opt||{};var h={apikey:SUPABASE_ANON_KEY,Authorization:"Bearer "+(opt.token||SUPABASE_ANON_KEY),"Content-Type":"application/json"};
+  opt=opt||{};var h={apikey:SUPABASE_ANON_KEY,"Content-Type":"application/json"};
+  if(opt.token)h.Authorization="Bearer "+opt.token;
   if(opt.prefer)h.Prefer=opt.prefer;
   return fetch(SUPABASE_URL+path,{method:opt.method||"GET",headers:h,body:opt.body?JSON.stringify(opt.body):undefined});
 }

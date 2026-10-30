@@ -57,6 +57,13 @@ button:focus-visible{outline:3px solid #d4e0f3;outline-offset:1px}
 .legend{display:flex;gap:20px;font-size:.8rem;color:var(--mute);margin-top:14px;flex-wrap:wrap}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:6px;border:1px solid var(--line-strong);background:#fff}
 .legend i.b{background:var(--busy);border-color:var(--line)}.legend i.y{border-color:var(--ok);background:#e8f5ed}
+.chk{display:flex;align-items:flex-start;gap:10px;font-weight:400;font-size:.85rem;line-height:1.5;margin-top:20px;cursor:pointer}
+.chk input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:var(--acc)}
+.chk a{color:var(--acc);font-weight:600}
+.priv{margin-top:12px;padding:14px 16px;background:#f7f8fb;border:1px solid var(--line);border-radius:6px;font-size:.82rem;line-height:1.55;color:var(--ink)}
+.priv h3{margin:0 0 6px;font-size:.82rem;letter-spacing:.04em;text-transform:uppercase}
+.priv a{color:var(--acc);font-weight:600}
+.priv ul{margin:6px 0 0;padding-left:18px}.priv li{margin:3px 0}
 .note{font-size:.82rem;color:var(--mute);margin:12px 0 0}
 .phone{display:grid;grid-template-columns:minmax(150px,42%) 1fr;gap:8px}
 details{margin-top:18px}summary{cursor:pointer;color:var(--mute);font-size:.88rem}
@@ -112,6 +119,21 @@ th{color:var(--mute);font-weight:600;font-size:.72rem;letter-spacing:.08em;text-
       <select id="cc" aria-label="Country code"></select>
       <input id="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="Phone number" maxlength="20" aria-label="Phone number">
     </div>
+    <div class="consent">
+      <label class="chk" for="consent"><input type="checkbox" id="consent"><span>I agree that Co Print may process my company name, email address and phone number to arrange and confirm my meeting at Formnext 2026 and to contact me about it. I have read the <a href="#" id="privToggle">Privacy Notice</a>.</span></label>
+      <div class="priv" id="priv" hidden>
+        <h3>Privacy Notice</h3>
+        <ul>
+          <li><strong>Data controller:</strong> Co Print Mühendislik Makina Yazılım Sanayi ve Ticaret Anonim Şirketi.</li>
+          <li><strong>Data we collect:</strong> your company name, email address, phone number and the meeting time you choose.</li>
+          <li><strong>Purpose:</strong> to schedule and confirm your meeting at Formnext 2026, to send you the confirmation and calendar invitation, and to contact you about the meeting and a possible Co Print Quadro reseller cooperation.</li>
+          <li><strong>Legal basis:</strong> your consent, which you can withdraw at any time. Withdrawal does not affect processing carried out before it.</li>
+          <li><strong>Service providers:</strong> we use providers for database hosting and email delivery. They process data on our behalf and may be located outside your country, including outside the EU and Turkey.</li>
+          <li><strong>Retention:</strong> we keep your data only as long as needed for the meeting and any resulting business relationship, or until you ask us to delete it. Cancelling your booking with your cancellation code deletes your booking data.</li>
+          <li><strong>Your rights:</strong> under the GDPR and the Turkish KVKK you may request access, correction or deletion of your data, object to its processing, or withdraw your consent by writing to <a id="privMail" href="#"></a>.</li>
+        </ul>
+      </div>
+    </div>
     <button class="primary" id="submit" disabled>Confirm meeting</button>
     <div class="msg" id="msg" role="status" aria-live="polite"></div>
   </div>
@@ -166,6 +188,8 @@ th{color:var(--mute);font-weight:600;font-size:.72rem;letter-spacing:.08em;text-
 /* ===== CONFIG: paste your Supabase values (Project Settings > API) ===== */
 var SUPABASE_URL = "https://elmgycaefdhwceizwuuf.supabase.co";
 var SUPABASE_ANON_KEY = "sb_publishable_TQQoJxGiEJDAZ7gx9iO2Yw_aMdEuS2G";
+var PRIVACY_EMAIL = "info@coprint3d.com"; // contact address shown in the Privacy Notice (change if needed)
+var CONSENT_VERSION = "2026-10-30";
 /* ======================================================================= */
 
 var DAYS=[["2026-11-17","Tue","17 Nov",9,18],["2026-11-18","Wed","18 Nov",9,18],["2026-11-19","Thu","19 Nov",9,18],["2026-11-20","Fri","20 Nov",9,16]];
@@ -175,6 +199,8 @@ var state={day:DAYS[0][0],slot:null,taken:{},token:null,all:[],mine:null};
 try{state.mine=JSON.parse(localStorage.getItem("cp_mine")||"null")}catch(e){}
 function saveMine(){try{if(state.mine)localStorage.setItem("cp_mine",JSON.stringify(state.mine));else localStorage.removeItem("cp_mine")}catch(e){}}
 function makeCode(){var a="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=new Uint8Array(10);crypto.getRandomValues(r);return Array.prototype.map.call(r,function(x){return a[x%a.length]}).join("")}
+function initPrivacy(){var a=$("privMail");a.textContent=PRIVACY_EMAIL;a.href="mailto:"+PRIVACY_EMAIL;
+  $("privToggle").onclick=function(e){e.preventDefault();var p=$("priv");p.hidden=!p.hidden}}
 function fillCountries(){var c=$("cc"),o=document.createElement("option");o.value="";o.textContent="Country code";c.appendChild(o);
   COUNTRIES.forEach(function(x){var p=x.split("|"),op=document.createElement("option");op.value=p[1];op.textContent=p[0]+" (+"+p[1]+")";c.appendChild(op)})}
 var $=function(i){return document.getElementById(i)};
@@ -234,10 +260,11 @@ $("submit").onclick=async function(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return say("msg","Please enter a valid email address.","err");
   if(!cc)return say("msg","Please select your country code.","err");
   if(!/^[0-9]{6,14}$/.test(num))return say("msg","Please enter your phone number using digits only (without the country code).","err");
+  if(!$("consent").checked)return say("msg","Please tick the consent box to continue.","err");
   var phone="+"+cc+" "+num,code=makeCode(),slot=state.slot;
   $("submit").disabled=true;say("msg","Booking…");
   try{
-    var r=await api("/rest/v1/bookings",{method:"POST",prefer:"return=minimal",body:{slot:slot,company:company,email:email,phone:phone,cancel_code:code}});
+    var r=await api("/rest/v1/bookings",{method:"POST",prefer:"return=minimal",body:{slot:slot,company:company,email:email,phone:phone,cancel_code:code,consent:true,consent_version:CONSENT_VERSION}});
     if(r.status===409){
       var txt="";try{txt=JSON.stringify(await r.json())}catch(e){}
       if(txt.indexOf("email_unique")>=0)say("msg","This email address already has a booking. Each company can book one meeting. Use the cancellation code to cancel it first.","err");
@@ -247,7 +274,7 @@ $("submit").onclick=async function(){
     else{
       state.mine={slot:slot,code:code,email:email,company:company};saveMine();state.slot=null;
       var p=parse(slot);say("msg","Your meeting is confirmed for "+dayLabel(p.day)+", "+p.time+" at "+STAND+". A confirmation email is on its way to "+email+" (please check your spam folder too).","ok");
-      $("company").value=$("email").value=$("phone").value="";$("cc").value="";
+      $("company").value=$("email").value=$("phone").value="";$("cc").value="";$("consent").checked=false;
     }
   }catch(e){say("msg","Booking failed. Please try again.","err")}
   await loadTaken();renderAll();
@@ -313,7 +340,7 @@ $("csv").onclick=function(){
   a.download="coprint-formnext-2026-meetings.csv";a.click();
 };
 
-fillCountries();renderAll();
+fillCountries();initPrivacy();renderAll();
 if(!configured)say("msg","Setup needed: add your Supabase URL and key at the top of the script.","err");
 else{loadTaken();setInterval(loadTaken,30000);
   try{var tk=sessionStorage.getItem("cp_tok");if(tk)state.token=tk}catch(e){}}
